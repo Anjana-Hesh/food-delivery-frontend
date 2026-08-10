@@ -1,17 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Plus, ChevronLeft, ChevronRight, TrendingUp, Layers, PackageX, AlertTriangle, Flame } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import type { FoodItem } from "../types";
+import { fetchFoodItems } from "../api";
 
 interface MenuScreenProps {
   onSelectItemToEdit: (item: FoodItem) => void;
 }
 
+const STATIC_FOOD_ITEMS: FoodItem[] = [
+  { id: "1", name: "Pancake Stack with Berries", category: "Desserts", price: 1490.00, stock: 12, imageUrl: "https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=500&q=80" },
+  { id: "2", name: "Classic Caesar Salad", category: "Burgers", price: 1250.00, stock: 15, imageUrl: "https://images.unsplash.com/photo-1546793665-c74683f339c1?auto=format&fit=crop&w=500&q=80" },
+  { id: "3", name: "Margherita Pizza", category: "Pizzas", price: 2850.00, stock: 8, imageUrl: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=500&q=80" },
+  { id: "4", name: "Grilled Beef Steak", category: "Burgers", price: 3450.00, stock: 0, imageUrl: "https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=500&q=80" },
+  { id: "5", name: "Creamy Carbonara Pasta", category: "Pizzas", price: 1850.00, stock: 10, imageUrl: "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=500&q=80" },
+  { id: "6", name: "Club Sandwich Deluxe", category: "Burgers", price: 1650.00, stock: 20, imageUrl: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=500&q=80" },
+  { id: "7", name: "Herb Grilled Chicken", category: "Burgers", price: 2200.00, stock: 5, imageUrl: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=500&q=80" },
+  { id: "8", name: "Mediterranean Quinoa Bowl", category: "Drinks", price: 1350.00, stock: 14, imageUrl: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=500&q=80" },
+  { id: "9", name: "Chocolate Lava Cake", category: "Desserts", price: 950.00, stock: 0, imageUrl: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=500&q=80" },
+  { id: "10", name: "Iced Cappuccino", category: "Drinks", price: 850.00, stock: 25, imageUrl: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=500&q=80" }
+];
+
 export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) => {
+  const [foodItems, setFoodItems] = useState<FoodItem[]>(STATIC_FOOD_ITEMS);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 8;
+
+  useEffect(() => {
+    fetchFoodItems()
+      .then((data) => setFoodItems(data))
+      .catch(() => {
+        // Fallback already configured via static default state
+        console.log("Using local static data fallback for Menu Screen");
+      });
+  }, []);
 
   const salesData = [
     { day: "Mon", sales: 12000 },
@@ -21,20 +45,6 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) =>
     { day: "Fri", sales: 30000 },
     { day: "Sat", sales: 45000 },
     { day: "Sun", sales: 38000 },
-  ];
-
-  // Top 10 Most Sold Dishes Data
-  const foodItems: FoodItem[] = [
-    { id: "1", name: "Pancake Stack with Berries", category: "Desserts", price: 1490.00, stock: 12, imageUrl: "https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=500&q=80" },
-    { id: "2", name: "Classic Caesar Salad", category: "Burgers", price: 1250.00, stock: 15, imageUrl: "https://images.unsplash.com/photo-1546793665-c74683f339c1?auto=format&fit=crop&w=500&q=80" },
-    { id: "3", name: "Margherita Pizza", category: "Pizzas", price: 2850.00, stock: 8, imageUrl: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=500&q=80" },
-    { id: "4", name: "Grilled Beef Steak", category: "Burgers", price: 3450.00, stock: 0, imageUrl: "https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=500&q=80" },
-    { id: "5", name: "Creamy Carbonara Pasta", category: "Pizzas", price: 1850.00, stock: 10, imageUrl: "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=500&q=80" },
-    { id: "6", name: "Club Sandwich Deluxe", category: "Burgers", price: 1650.00, stock: 20, imageUrl: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=500&q=80" },
-    { id: "7", name: "Herb Grilled Chicken", category: "Burgers", price: 2200.00, stock: 5, imageUrl: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=500&q=80" },
-    { id: "8", name: "Mediterranean Quinoa Bowl", category: "Drinks", price: 1350.00, stock: 14, imageUrl: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=500&q=80" },
-    { id: "9", name: "Chocolate Lava Cake", category: "Desserts", price: 950.00, stock: 0, imageUrl: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=500&q=80" },
-    { id: "10", name: "Iced Cappuccino", category: "Drinks", price: 850.00, stock: 25, imageUrl: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=500&q=80" }
   ];
 
   const categories = ["All", "Burgers", "Pizzas", "Drinks", "Desserts"];

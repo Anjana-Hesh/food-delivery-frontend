@@ -1,10 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Upload, RefreshCw, Save, Image as ImageIcon, Package, Layers, CheckCircle2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { FoodItem } from '../types';
+import { fetchFoodItems, saveFoodItem, uploadFoodItemImage } from '../api';
 
 interface ManageItemsProps {
   editingItem?: FoodItem | null;
 }
+
+const STATIC_FOOD_ITEMS: FoodItem[] = [
+  { id: '1', name: 'Pancake Stack with Berries', category: 'Desserts', price: 1490.00, stock: 12, imageUrl: 'https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=500&q=80' },
+  { id: '2', name: 'Classic Caesar Salad', category: 'Burgers', price: 1250.00, stock: 15, imageUrl: 'https://images.unsplash.com/photo-1546793665-c74683f339c1?auto=format&fit=crop&w=500&q=80' },
+  { id: '3', name: 'Margherita Pizza', category: 'Pizzas', price: 2850.00, stock: 8, imageUrl: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=500&q=80' },
+  { id: '4', name: 'Grilled Beef Steak', category: 'Burgers', price: 3450.00, stock: 0, imageUrl: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=500&q=80' },
+  { id: '5', name: 'Creamy Carbonara Pasta', category: 'Pizzas', price: 1850.00, stock: 10, imageUrl: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=500&q=80' },
+  { id: '6', name: 'Club Sandwich Deluxe', category: 'Burgers', price: 1650.00, stock: 20, imageUrl: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=500&q=80' },
+  { id: '7', name: 'Herb Grilled Chicken', category: 'Burgers', price: 2200.00, stock: 5, imageUrl: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=500&q=80' },
+  { id: '8', name: 'Mediterranean Quinoa Bowl', category: 'Drinks', price: 1350.00, stock: 14, imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=500&q=80' },
+  { id: '9', name: 'Chocolate Lava Cake', category: 'Desserts', price: 950.00, stock: 0, imageUrl: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=500&q=80' },
+  { id: '10', name: 'Iced Cappuccino', category: 'Drinks', price: 850.00, stock: 25, imageUrl: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=500&q=80' },
+];
 
 export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -18,19 +32,17 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 10;
 
-  // Same Names and Data as MenuScreen for 100% Sync
-  const [items, setItems] = useState<FoodItem[]>([
-    { id: '1', name: 'Pancake Stack with Berries', category: 'Desserts', price: 1490.00, stock: 12, imageUrl: 'https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=500&q=80' },
-    { id: '2', name: 'Classic Caesar Salad', category: 'Burgers', price: 1250.00, stock: 15, imageUrl: 'https://images.unsplash.com/photo-1546793665-c74683f339c1?auto=format&fit=crop&w=500&q=80' },
-    { id: '3', name: 'Margherita Pizza', category: 'Pizzas', price: 2850.00, stock: 8, imageUrl: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=500&q=80' },
-    { id: '4', name: 'Grilled Beef Steak', category: 'Burgers', price: 3450.00, stock: 0, imageUrl: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=500&q=80' },
-    { id: '5', name: 'Creamy Carbonara Pasta', category: 'Pizzas', price: 1850.00, stock: 10, imageUrl: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=500&q=80' },
-    { id: '6', name: 'Club Sandwich Deluxe', category: 'Burgers', price: 1650.00, stock: 20, imageUrl: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=500&q=80' },
-    { id: '7', name: 'Herb Grilled Chicken', category: 'Burgers', price: 2200.00, stock: 5, imageUrl: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=500&q=80' },
-    { id: '8', name: 'Mediterranean Quinoa Bowl', category: 'Drinks', price: 1350.00, stock: 14, imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=500&q=80' },
-    { id: '9', name: 'Chocolate Lava Cake', category: 'Desserts', price: 950.00, stock: 0, imageUrl: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=500&q=80' },
-    { id: '10', name: 'Iced Cappuccino', category: 'Drinks', price: 850.00, stock: 25, imageUrl: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=500&q=80' },
-  ]);
+  const [items, setItems] = useState<FoodItem[]>(STATIC_FOOD_ITEMS);
+
+  const loadData = () => {
+    fetchFoodItems()
+      .then(data => setItems(data))
+      .catch(() => console.log("Using static data fallback for ManageItems Screen"));
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   useEffect(() => {
     if (editingItem) {
@@ -42,35 +54,61 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
     }
   }, [editingItem]);
 
-  const handleSaveItem = (e: React.FormEvent) => {
+  const handleSaveItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !price) return;
 
-    const newItem: FoodItem = {
-      id: editingItem ? editingItem.id : Date.now().toString(),
-      name: title,
-      category,
-      price: parseFloat(price),
-      stock: parseInt(stock) || 0,
-      imageUrl: selectedImage 
-        ? URL.createObjectURL(selectedImage) 
-        : editingItem ? editingItem.imageUrl : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80',
-    };
+    try {
+      let imageUrl = editingItem ? editingItem.imageUrl : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80';
+      if (selectedImage) {
+        imageUrl = await uploadFoodItemImage(selectedImage);
+      }
 
-    if (editingItem) {
-      setItems(items.map(i => i.id === editingItem.id ? newItem : i));
-    } else {
-      setItems([newItem, ...items]);
+      const itemPayload: Partial<FoodItem> = {
+        name: title,
+        category,
+        price: parseFloat(price),
+        stock: parseInt(stock) || 0,
+        imageUrl,
+      };
+
+      if (editingItem) {
+        itemPayload.id = editingItem.id;
+      }
+
+      const saved = await saveFoodItem(itemPayload);
+      if (editingItem) {
+        setItems(items.map(i => i.id === editingItem.id ? saved : i));
+      } else {
+        setItems([saved, ...items]);
+      }
+
+      setIsSuccess(true);
+      setTimeout(() => setIsSuccess(false), 3000);
+      setTitle('');
+      setPrice('');
+      setStock('10');
+      setSelectedImage(null);
+    } catch (err) {
+      console.error("Error saving item", err);
     }
-
-    setIsSuccess(true);
-    setTimeout(() => setIsSuccess(false), 3000);
   };
 
-  const handleStockChange = (id: string, newStock: number) => {
-    setItems(prevItems => 
-      prevItems.map(item => item.id === id ? { ...item, stock: Math.max(0, newStock) } : item)
-    );
+  const handleStockChange = async (id: string, newStock: number) => {
+    const targetItem = items.find(i => i.id === id);
+    if (!targetItem) return;
+
+    try {
+      const updatedItem = { ...targetItem, stock: Math.max(0, newStock) };
+      const saved = await saveFoodItem(updatedItem);
+      setItems(items.map(i => i.id === id ? saved : i));
+    } catch (err) {
+      console.error("Error updating stock", err);
+      // fallback
+      setItems(prevItems => 
+        prevItems.map(item => item.id === id ? { ...item, stock: Math.max(0, newStock) } : item)
+      );
+    }
   };
 
   const filteredItems = items.filter(i => 
@@ -144,7 +182,7 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
                   <option value="Burgers">Burgers</option>
                   <option value="Pizzas">Pizzas</option>
                   <option value="Drinks">Drinks</option>
-                  <option value="Desserts">Dessert</option>
+                  <option value="Desserts">Desserts</option>
                 </select>
               </div>
 

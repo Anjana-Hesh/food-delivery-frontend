@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Truck, Star, Phone, MapPin, Plus, X, Upload, Clock, Search, User, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import type { Driver } from '../types';
+import { fetchDrivers, registerDriver, updateDriverStatus } from '../api';
+
+const STATIC_DRIVERS: Driver[] = [
+  { id: "DRV-101", name: "Kamal Perera", age: 29, phone: "+94 77 123 4567", address: "123, Galle Road, Colombo 03", vehicleNo: "WP BAZ-4829", rating: 4.8, workingHours: "08:00 AM - 05:00 PM", experienceYears: 4, status: "AVAILABLE", imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80" },
+  { id: "DRV-102", name: "Sunil Shantha", age: 34, phone: "+94 71 987 6543", address: "45, Kandy Road, Kadawatha", vehicleNo: "WP CAD-1102", rating: 4.5, workingHours: "10:00 AM - 07:00 PM", experienceYears: 6, status: "ON_DELIVERY", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80" },
+  { id: "DRV-103", name: "Nimal Silva", age: 31, phone: "+94 75 444 8899", address: "88, Main Street, Galle", vehicleNo: "WP GAE-5521", rating: 4.9, workingHours: "07:00 AM - 04:00 PM", experienceYears: 5, status: "AVAILABLE", imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80" },
+  { id: "DRV-104", name: "Ruwan Kumara", age: 27, phone: "+94 72 333 1122", address: "12, Beach Road, Matara", vehicleNo: "WP SP-9988", rating: 4.6, workingHours: "09:00 AM - 06:00 PM", experienceYears: 3, status: "AVAILABLE", imageUrl: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=500&q=80" },
+  { id: "DRV-105", name: "Kasun Jayasuriya", age: 33, phone: "+94 76 555 4433", address: "67, Lake Road, Kurunegala", vehicleNo: "WP CP-1234", rating: 4.7, workingHours: "08:00 AM - 05:00 PM", experienceYears: 7, status: "AVAILABLE", imageUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&q=80" }
+];
 
 export const DeliveryScreen: React.FC = () => {
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
@@ -11,13 +20,66 @@ export const DeliveryScreen: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const driversPerPage = 8;
 
-  const [drivers, setDrivers] = useState<Driver[]>([
-    { id: "DRV-101", name: "Kamal Perera", age: 29, phone: "+94 77 123 4567", address: "123, Galle Road, Colombo 03", vehicleNo: "WP BAZ-4829", rating: 4.8, workingHours: "08:00 AM - 05:00 PM", experienceYears: 4, status: "AVAILABLE", imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80" },
-    { id: "DRV-102", name: "Sunil Shantha", age: 34, phone: "+94 71 987 6543", address: "45, Kandy Road, Kadawatha", vehicleNo: "WP CAD-1102", rating: 4.5, workingHours: "10:00 AM - 07:00 PM", experienceYears: 6, status: "ON_DELIVERY", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80" },
-    { id: "DRV-103", name: "Nimal Silva", age: 31, phone: "+94 75 444 8899", address: "88, Main Street, Galle", vehicleNo: "WP GAE-5521", rating: 4.9, workingHours: "07:00 AM - 04:00 PM", experienceYears: 5, status: "AVAILABLE", imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80" },
-    { id: "DRV-104", name: "Ruwan Kumara", age: 27, phone: "+94 72 333 1122", address: "12, Beach Road, Matara", vehicleNo: "WP SP-9988", rating: 4.6, workingHours: "09:00 AM - 06:00 PM", experienceYears: 3, status: "AVAILABLE", imageUrl: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=500&q=80" },
-    { id: "DRV-105", name: "Kasun Jayasuriya", age: 33, phone: "+94 76 555 4433", address: "67, Lake Road, Kurunegala", vehicleNo: "WP CP-1234", rating: 4.7, workingHours: "08:00 AM - 05:00 PM", experienceYears: 7, status: "AVAILABLE", imageUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&q=80" }
-  ]);
+  const [drivers, setDrivers] = useState<Driver[]>(STATIC_DRIVERS);
+  const [formName, setFormName] = useState('');
+  const [formAge, setFormAge] = useState('');
+  const [formPhone, setFormPhone] = useState('');
+  const [formAddress, setFormAddress] = useState('');
+  const [formVehicleNo, setFormVehicleNo] = useState('');
+
+  const loadData = () => {
+    fetchDrivers()
+      .then(data => setDrivers(data))
+      .catch(() => console.log("Using static data fallback for Drivers Screen"));
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleRegisterDriver = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formName || !formPhone || !formVehicleNo) return;
+
+    try {
+      const payload: Partial<Driver> = {
+        name: formName,
+        age: parseInt(formAge) || 30,
+        phone: formPhone,
+        address: formAddress || "Colombo, Sri Lanka",
+        vehicleNo: formVehicleNo,
+        rating: 5.0,
+        workingHours: "08:00 AM - 05:00 PM",
+        experienceYears: 2,
+        status: "AVAILABLE"
+      };
+
+      const saved = await registerDriver(payload);
+      setDrivers([...drivers, saved]);
+      setIsAddModalOpen(false);
+
+      // Reset Form
+      setFormName('');
+      setFormAge('');
+      setFormPhone('');
+      setFormAddress('');
+      setFormVehicleNo('');
+    } catch (err) {
+      console.error("Error registering driver", err);
+    }
+  };
+
+  const handleAssignDriverToJob = async (drv: Driver) => {
+    try {
+      await updateDriverStatus(drv.id, "ON_DELIVERY");
+      loadData();
+      setSelectedDriver(null);
+    } catch (err) {
+      console.error("Error assigning driver", err);
+      setDrivers(drivers.map(d => d.id === drv.id ? { ...d, status: "ON_DELIVERY" } : d));
+      setSelectedDriver(null);
+    }
+  };
 
   const filteredDrivers = drivers.filter(d => 
     d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -35,7 +97,7 @@ export const DeliveryScreen: React.FC = () => {
     <div className="space-y-8">
       {/* Top Banner Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-slate-900/80 backdrop-blur-xl border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
+        <div className="lg:col-span-2 bg-slate-900/80 backdrop-blur-xl border border-slate-800 p-6 rounded-2xl flex flex-col justify-between shadow-2xl">
           <div className="flex justify-between items-center mb-4">
             <div>
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -68,7 +130,7 @@ export const DeliveryScreen: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
+        <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between shadow-2xl">
           <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Driver Performance Rates</h3>
           <div className="h-32 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -117,6 +179,15 @@ export const DeliveryScreen: React.FC = () => {
                 <span className="absolute top-3 left-3 bg-white/90 text-slate-900 font-semibold text-[11px] px-3 py-1 rounded-full shadow-md backdrop-blur-sm">
                   {drv.id}
                 </span>
+                <span className={`absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                  drv.status === 'AVAILABLE' 
+                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
+                    : drv.status === 'ON_DELIVERY' 
+                    ? 'bg-sky-500/20 text-sky-400 border-sky-500/30' 
+                    : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                }`}>
+                  {drv.status}
+                </span>
               </div>
 
               <div className="p-4 space-y-3">
@@ -139,7 +210,7 @@ export const DeliveryScreen: React.FC = () => {
                     onClick={() => setSelectedDriver(drv)}
                     className="bg-white hover:bg-slate-200 text-slate-950 font-semibold text-xs px-4 py-2 rounded-xl transition-all shadow-md flex items-center gap-1.5 active:scale-95"
                   >
-                    <Check className="w-3.5 h-3.5 stroke-[3]" /> Assign Driver
+                    <Check className="w-3.5 h-3.5 stroke-[3]" /> Details
                   </button>
                 </div>
               </div>
@@ -226,6 +297,15 @@ export const DeliveryScreen: React.FC = () => {
               <span className="text-slate-400 font-medium">Performance Rating</span>
               <span className="font-black text-amber-400 text-sm flex items-center gap-1"><Star className="w-4 h-4 fill-amber-400" /> {selectedDriver.rating} Stars</span>
             </div>
+
+            {selectedDriver.status === 'AVAILABLE' && (
+              <button 
+                onClick={() => handleAssignDriverToJob(selectedDriver)}
+                className="w-full py-3 bg-sky-600 hover:bg-sky-500 font-bold text-xs text-white rounded-xl shadow-lg transition-all"
+              >
+                Dispatch to Active Delivery Job
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -240,14 +320,14 @@ export const DeliveryScreen: React.FC = () => {
 
             <h3 className="text-lg font-bold text-white">Register New Driver</h3>
 
-            <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); setIsAddModalOpen(false); }}>
-              <input type="text" placeholder="Full Name" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white" required />
+            <form className="space-y-3" onSubmit={handleRegisterDriver}>
+              <input type="text" placeholder="Full Name" value={formName} onChange={e => setFormName(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none" required />
               <div className="grid grid-cols-2 gap-3">
-                <input type="number" placeholder="Age" className="bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white" required />
-                <input type="text" placeholder="Phone Number" className="bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white" required />
+                <input type="number" placeholder="Age" value={formAge} onChange={e => setFormAge(e.target.value)} className="bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none" required />
+                <input type="text" placeholder="Phone Number" value={formPhone} onChange={e => setFormPhone(e.target.value)} className="bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none" required />
               </div>
-              <input type="text" placeholder="Residential Address" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white" required />
-              <input type="text" placeholder="Vehicle Number" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white" required />
+              <input type="text" placeholder="Residential Address" value={formAddress} onChange={e => setFormAddress(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none" required />
+              <input type="text" placeholder="Vehicle Number" value={formVehicleNo} onChange={e => setFormVehicleNo(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none" required />
 
               <div>
                 <label className="text-xs font-semibold text-slate-300 block mb-1">Driver Photo (Upload to GCP Bucket)</label>
