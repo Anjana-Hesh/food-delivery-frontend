@@ -14,11 +14,12 @@ export default function App() {
 
   const handleSelectItemToEdit = (item: FoodItem) => {
     setSelectedItemToEdit(item);
-    setActiveTab('manage'); // Navigate to Manage Stock Screen automatically
+    setActiveTab('manage');
   };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 antialiased">
+      {/* Top Navbar */}
       <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-orange-600 rounded-xl shadow-lg shadow-orange-600/30">
@@ -60,7 +61,8 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      {/* Main Container - Expanded width to fit 4 cards in a row */}
+      <main className="max-w-[1600px] mx-auto px-6 py-8">
         {activeTab === 'menu' && <MenuScreen onSelectItemToEdit={handleSelectItemToEdit} />}
         {activeTab === 'manage' && <ManageItemsScreen editingItem={selectedItemToEdit} />}
         {activeTab === 'orders' && <OrderScreen onNavigateToDrivers={() => setActiveTab('delivery')} />}
