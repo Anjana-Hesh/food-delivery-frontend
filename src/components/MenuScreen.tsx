@@ -65,15 +65,16 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) =>
     <div className="space-y-8">
       {/* Top Banner Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-slate-900/80 backdrop-blur-xl border border-slate-800 p-6 rounded-2xl shadow-2xl space-y-4">
+        <div className="lg:col-span-2 glass-panel p-6 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] space-y-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-2xl pointer-events-none" />
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <h3 className="text-base font-extrabold text-white flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-orange-400" /> Revenue Contribution Trend
               </h3>
-              <p className="text-xs text-slate-400">Weekly sales breakdown across catalog items</p>
+              <p className="text-xs text-slate-400 mt-0.5">Weekly sales breakdown across catalog items</p>
             </div>
-            <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-xl">
+            <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl">
               +18.4% growth
             </span>
           </div>
@@ -83,13 +84,13 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) =>
               <AreaChart data={salesData}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.4}/>
+                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.3}/>
                     <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="day" stroke="#64748b" fontSize={11} />
-                <YAxis stroke="#64748b" fontSize={11} />
-                <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "12px", color: "#fff" }} />
+                <XAxis dataKey="day" stroke="#475569" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="#475569" fontSize={11} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={{ backgroundColor: "#090d16", borderColor: "rgba(255,255,255,0.08)", borderRadius: "12px", color: "#fff" }} />
                 <Area type="monotone" dataKey="sales" stroke="#f97316" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -97,30 +98,31 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) =>
         </div>
 
         <div className="space-y-4 flex flex-col justify-between">
-          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800 p-5 rounded-2xl flex items-center justify-between">
+          <div className="glass-panel p-5 rounded-2xl flex items-center justify-between shadow-xl relative overflow-hidden group hover:border-orange-500/20 transition-all duration-300">
+            <div className="absolute top-[-50%] right-[-20%] w-24 h-24 bg-orange-500/5 rounded-full blur-xl" />
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase">Active Catalog</p>
-              <p className="text-2xl font-black text-white mt-1">{foodItems.length} Dishes</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Catalog</p>
+              <p className="text-2xl font-black text-white mt-1 text-glow-orange">{foodItems.length} Dishes</p>
             </div>
             <div className="p-3 bg-orange-500/10 text-orange-400 rounded-xl border border-orange-500/20">
-              <Layers className="w-6 h-6" />
+              <Layers className="w-5 h-5" />
             </div>
           </div>
 
-          <div className={`bg-slate-900/80 backdrop-blur-xl border p-5 rounded-2xl flex items-center justify-between ${
-            outOfStockCount > 0 ? 'border-rose-500/40 bg-rose-500/5' : 'border-slate-800'
+          <div className={`glass-panel p-5 rounded-2xl flex items-center justify-between shadow-xl relative overflow-hidden transition-all duration-300 ${
+            outOfStockCount > 0 ? 'border-rose-500/30 bg-rose-500/5 shadow-[inset_0_1px_20px_rgba(244,63,94,0.02)]' : 'hover:border-rose-500/20'
           }`}>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase">Out of Stock Alert</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Out of Stock Alert</p>
               <p className="text-2xl font-black text-rose-400 mt-1">{outOfStockCount} Items</p>
             </div>
             <div className="p-3 bg-rose-500/10 text-rose-400 rounded-xl border border-rose-500/20">
-              <PackageX className="w-6 h-6" />
+              <PackageX className="w-5 h-5" />
             </div>
           </div>
 
           {outOfStockCount > 0 && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-300 rounded-xl text-xs font-medium flex items-center gap-2">
+            <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 text-rose-300 rounded-xl text-xs font-semibold flex items-center gap-2 animate-pulse">
               <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" /> Restock urgently to prevent lost sales!
             </div>
           )}
@@ -128,19 +130,19 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) =>
       </div>
 
       {/* Most Sold Dishes Header Banner */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 border border-slate-800 p-4 rounded-2xl">
-        <h3 className="text-base font-bold text-white flex items-center gap-2">
-          <Flame className="w-5 h-5 text-orange-500 fill-orange-500" /> Top 10 Most Sold Dishes
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 glass-panel p-4 rounded-2xl shadow-xl">
+        <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+          <Flame className="w-5 h-5 text-orange-500 fill-orange-500 animate-bounce" /> Top 10 Most Sold Dishes
         </h3>
 
         <div className="relative w-full sm:w-64">
-          <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             placeholder="Search catalog..."
-            className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-orange-500"
+            className="w-full bg-slate-950/60 border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-orange-500 focus:bg-slate-950 transition-all duration-300"
           />
         </div>
       </div>
@@ -151,10 +153,10 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) =>
           <button
             key={cat}
             onClick={() => { setSelectedCategory(cat); setCurrentPage(1); }}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-4.5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-300 ${
               selectedCategory === cat
-                ? "bg-orange-600 text-white shadow-lg shadow-orange-600/30 scale-105"
-                : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
+                ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-[0_4px_15px_rgba(249,115,22,0.3)] scale-[1.05]"
+                : "bg-slate-900/50 hover:bg-slate-900 text-slate-400 hover:text-white border border-white/5"
             }`}
           >
             {cat} ({cat === "All" ? foodItems.length : foodItems.filter(i => i.category === cat).length})
@@ -163,37 +165,37 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) =>
       </div>
 
       {/* Grid of Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {currentItems.map((item) => (
           <div
             key={item.id}
-            className="bg-[#18181b] border border-slate-800 rounded-2xl overflow-hidden flex flex-col justify-between shadow-xl transition-all duration-300 hover:border-slate-700"
+            className="glass-panel rounded-2xl overflow-hidden flex flex-col justify-between shadow-xl transition-all duration-500 hover:-translate-y-1.5 hover:border-orange-500/25 hover:shadow-[0_12px_30px_rgba(249,115,22,0.15)] group"
           >
             <div className="relative w-full h-48 overflow-hidden bg-slate-950">
               <img
                 src={item.imageUrl}
                 alt={item.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <span className="absolute top-3 left-3 bg-white/90 text-slate-900 font-semibold text-[11px] px-3 py-1 rounded-full shadow-md backdrop-blur-sm">
+              <span className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md text-orange-400 font-extrabold text-[9px] px-3 py-1 rounded-full shadow-md border border-orange-500/20 uppercase tracking-widest">
                 {item.category === 'Desserts' ? 'Vegetarian' : 'Non-Vegetarian'}
               </span>
             </div>
 
-            <div className="p-4 space-y-3">
-              <h4 className="font-semibold text-white text-base tracking-wide line-clamp-1">
+            <div className="p-4 space-y-4">
+              <h4 className="font-bold text-white text-sm tracking-wide line-clamp-1 group-hover:text-orange-400 transition-colors">
                 {item.name}
               </h4>
 
-              <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center justify-between pt-1 border-t border-white/5">
                 <div>
-                  <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Price</p>
-                  <p className="text-lg font-bold text-white">RS {item.price.toFixed(2)}</p>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Price</p>
+                  <p className="text-base font-extrabold text-white mt-0.5">RS {item.price.toFixed(2)}</p>
                 </div>
 
                 <button
                   onClick={() => onSelectItemToEdit(item)}
-                  className="bg-white hover:bg-slate-200 text-slate-950 font-semibold text-xs px-4 py-2 rounded-xl transition-all shadow-md flex items-center gap-1.5 active:scale-95"
+                  className="bg-white hover:bg-slate-200 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-1.5 active:scale-95 glow-btn-orange border-none cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[3]" /> Edit Item
                 </button>
@@ -205,7 +207,7 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) =>
 
       {/* Pagination Bar */}
       {totalPages > 1 && (
-        <div className="flex justify-between items-center bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+        <div className="flex justify-between items-center glass-panel p-4 rounded-2xl shadow-xl">
           <span className="text-xs text-slate-400 font-medium">
             Showing <strong className="text-white">{startIndex + 1}</strong> to <strong className="text-white">{Math.min(startIndex + itemsPerPage, filteredItems.length)}</strong> of <strong className="text-white">{filteredItems.length}</strong> Items
           </span>
@@ -214,7 +216,7 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) =>
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              className="p-2 bg-slate-950 border border-slate-800 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-xl"
+              className="p-2 bg-slate-950/80 border border-white/5 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -223,10 +225,10 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) =>
               <button
                 key={idx}
                 onClick={() => setCurrentPage(idx + 1)}
-                className={`w-8 h-8 rounded-xl text-xs font-bold transition-all ${
+                className={`w-8 h-8 rounded-xl text-xs font-bold transition-all duration-300 ${
                   currentPage === idx + 1
-                    ? "bg-orange-600 text-white"
-                    : "bg-slate-950 text-slate-400 hover:text-white border border-slate-800"
+                    ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/10"
+                    : "bg-slate-950/85 text-slate-400 hover:text-white border border-white/5"
                 }`}
               >
                 {idx + 1}
@@ -236,7 +238,7 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) =>
             <button
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              className="p-2 bg-slate-950 border border-slate-800 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-xl"
+              className="p-2 bg-slate-950/80 border border-white/5 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
