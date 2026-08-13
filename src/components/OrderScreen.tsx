@@ -52,7 +52,6 @@ export const OrderScreen: React.FC<Props> = ({ onNavigateToDrivers }) => {
           <ShoppingBag className="w-6 h-6 text-orange-400" />
           <div>
             <h2 className="text-xl font-bold text-white">Incoming Live Orders</h2>
-            <p className="text-xs text-slate-400">MySQL Database Transaction Logs</p>
           </div>
         </div>
 

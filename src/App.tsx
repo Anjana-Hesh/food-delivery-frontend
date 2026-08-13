@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Utensils, ShoppingBag, Truck, CreditCard, Settings } from 'lucide-react';
 import { MenuScreen } from './components/MenuScreen';
 import { OrderScreen } from './components/OrderScreen';
@@ -9,12 +9,22 @@ import type { FoodItem } from './types';
 import "./App.css";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'menu' | 'orders' | 'delivery' | 'payments' | 'manage'>('menu');
+  // Preserve active tab state in localStorage so refresh stays on current screen
+  const [activeTab, setActiveTab] = useState<'menu' | 'orders' | 'delivery' | 'payments' | 'manage'>(() => {
+    const saved = localStorage.getItem('activeTab');
+    return (saved as any) || 'menu';
+  });
+
   const [selectedItemToEdit, setSelectedItemToEdit] = useState<FoodItem | null>(null);
+
+  const handleTabChange = (tab: 'menu' | 'orders' | 'delivery' | 'payments' | 'manage') => {
+    setActiveTab(tab);
+    localStorage.setItem('activeTab', tab);
+  };
 
   const handleSelectItemToEdit = (item: FoodItem) => {
     setSelectedItemToEdit(item);
-    setActiveTab('manage');
+    handleTabChange('manage');
   };
 
   return (
@@ -46,7 +56,7 @@ export default function App() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => handleTabChange(tab.id as any)}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
                   isActive 
                     ? 'bg-orange-600 text-white shadow-md' 
@@ -65,7 +75,7 @@ export default function App() {
       <main className="max-w-[1600px] mx-auto px-6 py-8">
         {activeTab === 'menu' && <MenuScreen onSelectItemToEdit={handleSelectItemToEdit} />}
         {activeTab === 'manage' && <ManageItemsScreen editingItem={selectedItemToEdit} />}
-        {activeTab === 'orders' && <OrderScreen onNavigateToDrivers={() => setActiveTab('delivery')} />}
+        {activeTab === 'orders' && <OrderScreen onNavigateToDrivers={() => handleTabChange('delivery')} />}
         {activeTab === 'delivery' && <DeliveryScreen />}
         {activeTab === 'payments' && <PaymentScreen />}
       </main>

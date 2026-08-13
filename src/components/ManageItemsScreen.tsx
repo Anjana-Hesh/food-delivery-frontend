@@ -132,7 +132,6 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
             <h2 className="text-xl font-bold text-white tracking-wide">
               {editingItem ? `Editing Stock: ${editingItem.name}` : "Inventory & Stock Manager"}
             </h2>
-            <p className="text-xs text-slate-400">MongoDB Document Database Operations</p>
           </div>
         </div>
 
