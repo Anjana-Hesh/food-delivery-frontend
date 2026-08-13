@@ -69,7 +69,6 @@ export const PaymentScreen: React.FC = () => {
             <CreditCard className="w-8 h-8 text-orange-400 mx-auto" />
           </div>
           <h2 className="text-2xl font-black text-white">Payment Gateway</h2>
-          <p className="text-xs text-slate-400">PostgreSQL Billing Database Endpoint</p>
         </div>
 
         <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl">
@@ -88,7 +87,6 @@ export const PaymentScreen: React.FC = () => {
               <div>
                 <label className="text-xs font-semibold text-slate-300 block mb-1">Amount (RS)</label>
                 <div className="relative">
-                  <DollarSign className="w-4 h-4 absolute left-3 top-3.5 text-slate-400" />
                   <input type="number" value={amount} onChange={e => setAmount(e.target.value)} step="0.01" className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-sm text-white font-bold focus:outline-none focus:border-orange-500" required />
                 </div>
               </div>
@@ -126,7 +124,6 @@ export const PaymentScreen: React.FC = () => {
           <div className="flex justify-between items-center border-b border-slate-800 pb-3">
             <div>
               <h3 className="font-bold text-white text-base">Billing Transaction Logs</h3>
-              <p className="text-[10px] text-slate-400">Real-time ledger updates from PostgreSQL</p>
             </div>
             <button 
               onClick={loadLogs} 
