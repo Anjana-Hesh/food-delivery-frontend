@@ -123,19 +123,20 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
   return (
     <div className="space-y-8">
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/60 backdrop-blur-xl border border-slate-800 p-6 rounded-2xl shadow-2xl">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 glass-panel p-6 rounded-2xl shadow-xl">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl text-orange-400">
-            <Layers className="w-6 h-6" />
+            <Layers className="w-5 h-5 text-orange-400" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white tracking-wide">
+            <h2 className="text-lg font-extrabold text-white tracking-wide">
               {editingItem ? `Editing Stock: ${editingItem.name}` : "Inventory & Stock Manager"}
             </h2>
+            <p className="text-xs text-slate-400 mt-0.5">Control product stock, pricing, and details</p>
           </div>
         </div>
 
-        <span className="px-3.5 py-1.5 bg-slate-950 border border-slate-800 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2">
+        <span className="px-3.5 py-1.5 bg-slate-950/60 border border-white/5 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2">
           <Package className="w-4 h-4 text-orange-400" /> Total Managed Items: {items.length}
         </span>
       </div>
@@ -143,20 +144,20 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         
         {/* Left Form */}
-        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 shadow-2xl h-fit space-y-4">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
+        <div className="glass-panel rounded-2xl p-6 shadow-xl h-fit space-y-5">
+          <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
             <Plus className="w-4 h-4 text-orange-400" /> {editingItem ? 'Update Stock Item' : 'Create New Dish'}
           </h3>
 
           {isSuccess && (
-            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-xs font-bold flex items-center gap-2">
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-xs font-bold flex items-center gap-2 animate-pulse">
               <CheckCircle2 className="w-4 h-4" /> Item saved successfully!
             </div>
           )}
           
           <form className="space-y-4" onSubmit={handleSaveItem}>
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Item Title</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Item Title</label>
               <input 
                 type="text" 
                 value={title}
@@ -165,18 +166,18 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
                   setSearchQuery(e.target.value);
                 }}
                 placeholder="e.g. Crispy Chicken Sub" 
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500" 
+                className="w-full bg-slate-950/50 border border-white/5 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-orange-500 focus:bg-slate-950 transition-all duration-300" 
                 required
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Category</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Category</label>
                 <select 
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+                  className="w-full bg-slate-950/50 border border-white/5 rounded-xl px-3 py-3 text-xs text-white focus:outline-none focus:border-orange-500 focus:bg-slate-950 transition-all duration-300"
                 >
                   <option value="Burgers">Burgers</option>
                   <option value="Pizzas">Pizzas</option>
@@ -186,57 +187,57 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Stock Level</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Stock Level</label>
                 <input 
                   type="number" 
                   value={stock}
                   onChange={(e) => setStock(e.target.value)}
                   min="0" 
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500" 
+                  className="w-full bg-slate-950/50 border border-white/5 rounded-xl px-3 py-3 text-xs text-white focus:outline-none focus:border-orange-500 focus:bg-slate-950 transition-all duration-300" 
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Price (RS)</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Price (RS)</label>
               <input 
                 type="number" 
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="1490.00" 
                 step="0.01" 
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500" 
+                className="w-full bg-slate-950/50 border border-white/5 rounded-xl px-4 py-3 text-xs text-white font-bold focus:outline-none focus:border-orange-500 focus:bg-slate-950 transition-all duration-300" 
                 required
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Upload Photo (GCP Bucket)</label>
-              <label className="border-2 border-dashed border-slate-700 hover:border-orange-500 rounded-xl p-3 text-center cursor-pointer bg-slate-950/50 block">
-                <Upload className="w-5 h-5 text-orange-400 mx-auto mb-1" />
-                <span className="text-xs text-slate-300">Choose File</span>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Upload Photo (GCP Bucket)</label>
+              <label className="border-2 border-dashed border-white/5 hover:border-orange-500/40 rounded-xl p-3.5 text-center cursor-pointer bg-slate-950/20 hover:bg-slate-950/40 block transition-all duration-300">
+                <Upload className="w-5 h-5 text-orange-400 mx-auto mb-1.5" />
+                <span className="text-[10px] text-slate-400 font-bold">Choose File</span>
                 <input type="file" accept="image/*" className="hidden" onChange={(e) => setSelectedImage(e.target.files?.[0] || null)} />
-                {selectedImage && <p className="text-xs text-orange-400 font-bold mt-1 truncate">{selectedImage.name}</p>}
+                {selectedImage && <p className="text-[10px] text-orange-400 font-bold mt-1.5 truncate">{selectedImage.name}</p>}
               </label>
             </div>
 
-            <button type="submit" className="w-full py-3 rounded-xl bg-orange-600 hover:bg-orange-500 font-bold text-sm text-white shadow-lg transition-all flex items-center justify-center gap-2">
+            <button type="submit" className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 font-bold text-xs text-white shadow-lg shadow-orange-500/10 transition-all duration-300 flex items-center justify-center gap-2 border-none cursor-pointer glow-btn-orange">
               <ImageIcon className="w-4 h-4" /> {editingItem ? 'Save Stock Changes' : 'Create Item'}
             </button>
           </form>
         </div>
 
-        {/* Right Inventory Grid with Taller Image Height (h-36) */}
-        <div className="lg:col-span-3 space-y-5">
+        {/* Right Inventory Grid */}
+        <div className="lg:col-span-3 space-y-6">
           
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 border border-slate-800 p-4 rounded-2xl">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 glass-panel p-4 rounded-2xl shadow-xl">
+            <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
               <RefreshCw className="w-4 h-4 text-orange-400" /> Active Inventory Stream ({filteredItems.length})
             </h3>
 
             <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
               <input
                 type="text"
                 value={searchQuery}
@@ -245,58 +246,62 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
                   setCurrentPage(1);
                 }}
                 placeholder="Search inventory by title..."
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-orange-500 transition-colors"
+                className="w-full bg-slate-950/60 border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-orange-500 focus:bg-slate-950 transition-all duration-300"
               />
             </div>
           </div>
 
-          {/* Taller Cards (h-36 image) Grid */}
+          {/* Cards Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
             {currentItems.map((item) => (
               <div 
                 key={item.id} 
-                className="bg-[#18181b] border border-slate-800 rounded-2xl p-3 flex flex-col justify-between shadow-lg hover:border-slate-700 transition-all group"
+                className="glass-panel rounded-2xl p-3.5 flex flex-col justify-between shadow-lg hover:border-orange-500/20 hover:shadow-[0_8px_25px_rgba(249,115,22,0.1)] transition-all duration-300 group"
               >
                 <div className="space-y-2">
-                  <div className="relative w-full h-36 rounded-xl overflow-hidden bg-slate-950">
-                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                    <span className="absolute top-2 left-2 bg-slate-950/80 backdrop-blur-md text-orange-400 font-bold text-[9px] px-2 py-0.5 rounded border border-orange-500/30">
+                  <div className="relative w-full h-32 rounded-xl overflow-hidden bg-slate-950">
+                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <span className="absolute top-2 left-2 bg-slate-950/80 backdrop-blur-md text-orange-400 font-extrabold text-[8px] px-2 py-0.5 rounded border border-orange-500/20 uppercase tracking-widest">
                       {item.category}
                     </span>
                   </div>
 
                   <div>
-                    <h4 className="font-bold text-white text-xs line-clamp-1" title={item.name}>{item.name}</h4>
-                    <p className="text-xs font-black text-white mt-0.5">RS {item.price.toFixed(2)}</p>
+                    <h4 className="font-bold text-white text-xs line-clamp-1 group-hover:text-orange-400 transition-colors" title={item.name}>{item.name}</h4>
+                    <p className="text-[10px] font-black text-slate-300 mt-0.5">RS {item.price.toFixed(2)}</p>
                   </div>
                 </div>
 
-                <div className="border-t border-slate-800/80 pt-2.5 mt-2 space-y-2">
+                <div className="border-t border-white/5 pt-2.5 mt-2.5 space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${item.stock === 0 ? 'bg-rose-500/20 text-rose-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
+                    <span className={`text-[8px] font-extrabold px-2 py-0.5 rounded-full border tracking-wider uppercase ${
+                      item.stock === 0 
+                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' 
+                        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    }`}>
                       {item.stock === 0 ? 'Out of Stock' : `${item.stock} Available`}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                  <div className="flex items-center justify-between gap-1 bg-slate-950/80 p-1 rounded-xl border border-white/5">
                     <button 
                       type="button"
                       onClick={() => handleStockChange(item.id, item.stock - 1)} 
-                      className="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold"
+                      className="px-2 py-1 bg-slate-900/60 hover:bg-slate-800 text-white rounded-lg text-xs font-black cursor-pointer border-none"
                     >
                       -
                     </button>
-                    <span className="text-xs font-bold text-white">{item.stock}</span>
+                    <span className="text-xs font-extrabold text-white px-1.5">{item.stock}</span>
                     <button 
                       type="button"
                       onClick={() => handleStockChange(item.id, item.stock + 1)} 
-                      className="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold"
+                      className="px-2 py-1 bg-slate-900/60 hover:bg-slate-800 text-white rounded-lg text-xs font-black cursor-pointer border-none"
                     >
                       +
                     </button>
                     <button 
                       type="button"
-                      className="p-1 bg-slate-800 text-orange-400 hover:bg-orange-600 hover:text-white rounded-lg transition-colors"
+                      className="p-1 bg-slate-900 hover:bg-orange-600 hover:text-white text-orange-400 rounded-lg transition-colors border-none cursor-pointer"
                       title="Sync with MongoDB"
                     >
                       <Save className="w-3.5 h-3.5" />
@@ -309,7 +314,7 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex justify-between items-center bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+            <div className="flex justify-between items-center glass-panel p-4 rounded-2xl shadow-xl">
               <span className="text-xs text-slate-400 font-medium">
                 Showing <strong className="text-white">{startIndex + 1}</strong> to <strong className="text-white">{Math.min(startIndex + itemsPerPage, filteredItems.length)}</strong> of <strong className="text-white">{filteredItems.length}</strong> Managed Items
               </span>
@@ -318,7 +323,7 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  className="p-2 bg-slate-950 border border-slate-800 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-xl"
+                  className="p-2 bg-slate-950/80 border border-white/5 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -327,10 +332,10 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
                   <button
                     key={idx}
                     onClick={() => setCurrentPage(idx + 1)}
-                    className={`w-8 h-8 rounded-xl text-xs font-bold transition-all ${
+                    className={`w-8 h-8 rounded-xl text-xs font-bold transition-all duration-300 ${
                       currentPage === idx + 1
-                        ? "bg-orange-600 text-white"
-                        : "bg-slate-950 text-slate-400 hover:text-white border border-slate-800"
+                        ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/10"
+                        : "bg-slate-950/80 text-slate-400 hover:text-white border border-white/5"
                     }`}
                   >
                     {idx + 1}
@@ -340,7 +345,7 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  className="p-2 bg-slate-950 border border-slate-800 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-xl"
+                  className="p-2 bg-slate-950/80 border border-white/5 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

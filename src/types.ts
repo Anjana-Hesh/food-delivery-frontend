@@ -11,7 +11,7 @@ export interface Order {
   id: string;
   items: string[];
   total: number;
-  status: 'PENDING' | 'CONFIRMED' | 'DELIVERING' | 'COMPLETED';
+  status: 'PENDING' | 'CONFIRMED' | 'DELIVERING' | 'COMPLETED' | 'PAID';
 }
 
 export interface Driver {
