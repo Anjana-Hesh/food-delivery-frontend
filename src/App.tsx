@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Utensils, ShoppingBag, Truck, CreditCard, Settings } from 'lucide-react';
 import { MenuScreen } from './components/MenuScreen';
 import { OrderScreen } from './components/OrderScreen';
