@@ -2,15 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Truck, Star, Phone, MapPin, Plus, X, Upload, Clock, Search, User, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import type { Driver } from '../types';
-import { fetchDrivers, registerDriver, updateDriverStatus } from '../api';
-
-const STATIC_DRIVERS: Driver[] = [
-  { id: "DRV-101", name: "Kamal Perera", age: 29, phone: "+94 77 123 4567", address: "123, Galle Road, Colombo 03", vehicleNo: "WP BAZ-4829", rating: 4.8, workingHours: "08:00 AM - 05:00 PM", experienceYears: 4, status: "AVAILABLE", imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80" },
-  { id: "DRV-102", name: "Sunil Shantha", age: 34, phone: "+94 71 987 6543", address: "45, Kandy Road, Kadawatha", vehicleNo: "WP CAD-1102", rating: 4.5, workingHours: "10:00 AM - 07:00 PM", experienceYears: 6, status: "ON_DELIVERY", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80" },
-  { id: "DRV-103", name: "Nimal Silva", age: 31, phone: "+94 75 444 8899", address: "88, Main Street, Galle", vehicleNo: "WP GAE-5521", rating: 4.9, workingHours: "07:00 AM - 04:00 PM", experienceYears: 5, status: "AVAILABLE", imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80" },
-  { id: "DRV-104", name: "Ruwan Kumara", age: 27, phone: "+94 72 333 1122", address: "12, Beach Road, Matara", vehicleNo: "WP SP-9988", rating: 4.6, workingHours: "09:00 AM - 06:00 PM", experienceYears: 3, status: "AVAILABLE", imageUrl: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=500&q=80" },
-  { id: "DRV-105", name: "Kasun Jayasuriya", age: 33, phone: "+94 76 555 4433", address: "67, Lake Road, Kurunegala", vehicleNo: "WP CP-1234", rating: 4.7, workingHours: "08:00 AM - 05:00 PM", experienceYears: 7, status: "AVAILABLE", imageUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&q=80" }
-];
+import { fetchDrivers, registerDriver, updateDriverStatus, uploadFoodItemImage } from '../api';
 
 export const DeliveryScreen: React.FC = () => {
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
@@ -18,9 +10,10 @@ export const DeliveryScreen: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const driversPerPage = 8;
+  const driversPerPage = 12;
 
-  const [drivers, setDrivers] = useState<Driver[]>(STATIC_DRIVERS);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [loadError, setLoadError] = useState('');
   const [formName, setFormName] = useState('');
   const [formAge, setFormAge] = useState('');
   const [formPhone, setFormPhone] = useState('');
@@ -29,8 +22,11 @@ export const DeliveryScreen: React.FC = () => {
 
   const loadData = () => {
     fetchDrivers()
-      .then(data => setDrivers(data))
-      .catch(() => console.log("Using static data fallback for Drivers Screen"));
+      .then(data => {
+        setDrivers(data);
+        setLoadError('');
+      })
+      .catch(() => setLoadError('Drivers could not be loaded from the database.'));
   };
 
   useEffect(() => {
@@ -42,6 +38,11 @@ export const DeliveryScreen: React.FC = () => {
     if (!formName || !formPhone || !formVehicleNo) return;
 
     try {
+      let imageUrl = "";
+      if (selectedImage) {
+        imageUrl = await uploadFoodItemImage(selectedImage);
+      }
+
       const payload: Partial<Driver> = {
         name: formName,
         age: parseInt(formAge) || 30,
@@ -51,7 +52,8 @@ export const DeliveryScreen: React.FC = () => {
         rating: 5.0,
         workingHours: "08:00 AM - 05:00 PM",
         experienceYears: 2,
-        status: "AVAILABLE"
+        status: "AVAILABLE",
+        ...(imageUrl && { imageUrl })
       };
 
       const saved = await registerDriver(payload);
@@ -64,6 +66,7 @@ export const DeliveryScreen: React.FC = () => {
       setFormPhone('');
       setFormAddress('');
       setFormVehicleNo('');
+      setSelectedImage(null);
     } catch (err) {
       console.error("Error registering driver", err);
     }
@@ -92,6 +95,9 @@ export const DeliveryScreen: React.FC = () => {
   const currentDrivers = filteredDrivers.slice(startIndex, startIndex + driversPerPage);
 
   const ratingChartData = drivers.map(d => ({ name: d.name.split(' ')[0], rating: d.rating }));
+  const averageRating = drivers.length
+    ? (drivers.reduce((sum, driver) => sum + driver.rating, 0) / drivers.length).toFixed(2)
+    : '0.00';
 
   return (
     <div className="space-y-8">
@@ -126,7 +132,7 @@ export const DeliveryScreen: React.FC = () => {
             </div>
             <div className="bg-slate-950/40 p-3 rounded-xl border border-white/5">
               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Avg Rating</p>
-              <p className="text-lg font-black text-amber-400 mt-0.5">4.70 ★</p>
+              <p className="text-lg font-black text-amber-400 mt-0.5">{averageRating} ★</p>
             </div>
           </div>
         </div>
@@ -165,23 +171,43 @@ export const DeliveryScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* 4 Cards Per Row Driver Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {loadError && (
+          <div className="glass-panel rounded-2xl p-6 text-center shadow-xl border-rose-500/20">
+            <p className="text-sm font-extrabold text-rose-300">{loadError}</p>
+            <p className="text-xs text-slate-400 mt-2">Please check the backend connection and try again.</p>
+          </div>
+        )}
+
+        {!loadError && currentDrivers.length === 0 && (
+          <div className="glass-panel rounded-2xl p-6 text-center text-sm font-bold text-slate-300 shadow-xl">
+            No drivers found.
+          </div>
+        )}
+
+        {/* Driver Grid */}
+        {!loadError && currentDrivers.length > 0 && (
+        <div className="flex flex-wrap justify-center gap-3.5">
           {currentDrivers.map((drv) => (
             <div
               key={drv.id}
-              className="glass-panel rounded-2xl overflow-hidden flex flex-col justify-between shadow-xl transition-all duration-500 hover:-translate-y-1.5 hover:border-sky-500/25 hover:shadow-[0_12px_30px_rgba(56,189,248,0.12)] group"
+              className="glass-panel w-[178px] h-[236px] rounded-2xl overflow-hidden flex flex-col justify-between shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-sky-500/25 hover:shadow-[0_12px_30px_rgba(56,189,248,0.12)] group"
             >
-              <div className="relative w-full h-44 overflow-hidden bg-slate-950">
-                <img
-                  src={drv.imageUrl}
-                  alt={drv.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <span className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md text-slate-300 font-extrabold text-[9px] px-3 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-widest">
+              <div className="relative w-full h-[92px] overflow-hidden bg-slate-950 shrink-0">
+                {drv.imageUrl ? (
+                  <img
+                    src={drv.imageUrl}
+                    alt={drv.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-slate-600">
+                    <User className="h-7 w-7" />
+                  </div>
+                )}
+                <span className="absolute top-2 left-2 max-w-[calc(100%-1rem)] truncate bg-slate-950/80 backdrop-blur-md text-slate-300 font-extrabold text-[8px] px-2 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-widest">
                   {drv.id}
                 </span>
-                <span className={`absolute top-3 right-3 text-[9px] font-extrabold px-3 py-1 rounded-full border uppercase tracking-wider ${
+                <span className={`absolute bottom-2 right-2 text-[8px] font-extrabold px-2 py-1 rounded-full border uppercase tracking-wider ${
                   drv.status === 'AVAILABLE' 
                     ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
                     : drv.status === 'ON_DELIVERY' 
@@ -192,15 +218,15 @@ export const DeliveryScreen: React.FC = () => {
                 </span>
               </div>
 
-              <div className="p-4 space-y-4">
+              <div className="p-2.5 space-y-2.5 flex-1 flex flex-col justify-between">
                 <div>
-                  <h4 className="font-bold text-white text-base tracking-wide line-clamp-1 group-hover:text-sky-400 transition-colors">
+                  <h4 className="font-bold text-white text-[11px] leading-snug min-h-7 line-clamp-2 group-hover:text-sky-400 transition-colors" title={drv.name}>
                     {drv.name}
                   </h4>
-                  <p className="text-[10px] text-slate-400 font-mono font-bold mt-1 uppercase tracking-wider">{drv.vehicleNo}</p>
+                  <p className="text-[10px] text-slate-400 font-mono font-bold mt-1 uppercase tracking-wider truncate">{drv.vehicleNo}</p>
                 </div>
 
-                <div className="flex items-center justify-between pt-2.5 border-t border-white/5">
+                <div className="space-y-2 pt-2 border-t border-white/5">
                   <div>
                     <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Rating</p>
                     <p className="text-xs font-bold text-amber-400 flex items-center gap-1 mt-0.5">
@@ -210,7 +236,7 @@ export const DeliveryScreen: React.FC = () => {
 
                   <button
                     onClick={() => setSelectedDriver(drv)}
-                    className="bg-white hover:bg-slate-200 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-1.5 active:scale-95 border-none cursor-pointer glow-btn-sky"
+                    className="w-full bg-white hover:bg-slate-200 text-slate-950 font-bold text-[11px] px-3 py-2 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 active:scale-95 border-none cursor-pointer glow-btn-sky"
                   >
                     <Check className="w-3.5 h-3.5 stroke-[3]" /> Details
                   </button>
@@ -219,9 +245,10 @@ export const DeliveryScreen: React.FC = () => {
             </div>
           ))}
         </div>
+        )}
 
         {/* Driver Pagination Bar */}
-        {totalPages > 1 && (
+        {!loadError && totalPages > 1 && (
           <div className="flex justify-between items-center glass-panel p-4 rounded-2xl shadow-xl">
             <span className="text-xs text-slate-400 font-medium">
               Showing <strong className="text-white">{startIndex + 1}</strong> to <strong className="text-white">{Math.min(startIndex + driversPerPage, filteredDrivers.length)}</strong> of <strong className="text-white">{filteredDrivers.length}</strong> Drivers

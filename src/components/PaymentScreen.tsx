@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { CreditCard, ShieldCheck, DollarSign, ShieldAlert, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CreditCard, ShieldCheck, ShieldAlert, RefreshCw } from 'lucide-react';
 import { fetchPaymentLogs, processPayment } from '../api';
 import "../App.css";
 
@@ -13,7 +13,7 @@ interface BillingLog {
   createdAt: string;
 }
 
-export const PaymentScreen: React.FC = () => {
+export const PaymentScreen = () => {
   const [orderId, setOrderId] = useState('ORD-1');
   const [amount, setAmount] = useState('1490.00');
   const [customerName, setCustomerName] = useState('Amara Perera');

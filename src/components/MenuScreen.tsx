@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Search, Plus, ChevronLeft, ChevronRight, TrendingUp, Layers, PackageX, AlertTriangle, Flame } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import type { FoodItem } from "../types";
@@ -8,33 +8,25 @@ interface MenuScreenProps {
   onSelectItemToEdit: (item: FoodItem) => void;
 }
 
-const STATIC_FOOD_ITEMS: FoodItem[] = [
-  { id: "1", name: "Pancake Stack with Berries", category: "Desserts", price: 1490.00, stock: 12, imageUrl: "https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=500&q=80" },
-  { id: "2", name: "Classic Caesar Salad", category: "Burgers", price: 1250.00, stock: 15, imageUrl: "https://images.unsplash.com/photo-1546793665-c74683f339c1?auto=format&fit=crop&w=500&q=80" },
-  { id: "3", name: "Margherita Pizza", category: "Pizzas", price: 2850.00, stock: 8, imageUrl: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=500&q=80" },
-  { id: "4", name: "Grilled Beef Steak", category: "Burgers", price: 3450.00, stock: 0, imageUrl: "https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=500&q=80" },
-  { id: "5", name: "Creamy Carbonara Pasta", category: "Pizzas", price: 1850.00, stock: 10, imageUrl: "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=500&q=80" },
-  { id: "6", name: "Club Sandwich Deluxe", category: "Burgers", price: 1650.00, stock: 20, imageUrl: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=500&q=80" },
-  { id: "7", name: "Herb Grilled Chicken", category: "Burgers", price: 2200.00, stock: 5, imageUrl: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=500&q=80" },
-  { id: "8", name: "Mediterranean Quinoa Bowl", category: "Drinks", price: 1350.00, stock: 14, imageUrl: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=500&q=80" },
-  { id: "9", name: "Chocolate Lava Cake", category: "Desserts", price: 950.00, stock: 0, imageUrl: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=500&q=80" },
-  { id: "10", name: "Iced Cappuccino", category: "Drinks", price: 850.00, stock: 25, imageUrl: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=500&q=80" }
-];
-
 export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) => {
-  const [foodItems, setFoodItems] = useState<FoodItem[]>(STATIC_FOOD_ITEMS);
+  const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const itemsPerPage = 8;
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState<string>("");
+  const itemsPerPage = 12;
 
   useEffect(() => {
     fetchFoodItems()
-      .then((data) => setFoodItems(data))
+      .then((data) => {
+        setFoodItems(data);
+        setLoadError("");
+      })
       .catch(() => {
-        // Fallback already configured via static default state
-        console.log("Using local static data fallback for Menu Screen");
-      });
+        setLoadError("Menu items could not be loaded from the database.");
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   const salesData = [
@@ -47,7 +39,10 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) =>
     { day: "Sun", sales: 38000 },
   ];
 
-  const categories = ["All", "Burgers", "Pizzas", "Drinks", "Desserts"];
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(foodItems.map((item) => item.category).filter(Boolean))).sort()],
+    [foodItems]
+  );
 
   const filteredItems = foodItems.filter((item) => {
     const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
@@ -165,37 +160,57 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) =>
       </div>
 
       {/* Grid of Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {isLoading && (
+        <div className="glass-panel rounded-2xl p-8 text-center text-sm font-bold text-slate-300 shadow-xl">
+          Loading menu items from database...
+        </div>
+      )}
+
+      {!isLoading && loadError && (
+        <div className="glass-panel rounded-2xl p-8 text-center shadow-xl border-rose-500/20">
+          <p className="text-sm font-extrabold text-rose-300">{loadError}</p>
+          <p className="text-xs text-slate-400 mt-2">Please check the backend connection and try again.</p>
+        </div>
+      )}
+
+      {!isLoading && !loadError && currentItems.length === 0 && (
+        <div className="glass-panel rounded-2xl p-8 text-center text-sm font-bold text-slate-300 shadow-xl">
+          No menu items found.
+        </div>
+      )}
+
+      {!isLoading && !loadError && currentItems.length > 0 && (
+      <div className="flex flex-wrap justify-center gap-3.5">
         {currentItems.map((item) => (
           <div
             key={item.id}
-            className="glass-panel rounded-2xl overflow-hidden flex flex-col justify-between shadow-xl transition-all duration-500 hover:-translate-y-1.5 hover:border-orange-500/25 hover:shadow-[0_12px_30px_rgba(249,115,22,0.15)] group"
+            className="glass-panel w-[178px] h-[248px] rounded-2xl overflow-hidden flex flex-col justify-between shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-orange-500/25 hover:shadow-[0_12px_30px_rgba(249,115,22,0.15)] group"
           >
-            <div className="relative w-full h-48 overflow-hidden bg-slate-950">
+            <div className="relative w-full h-[104px] overflow-hidden bg-slate-950 shrink-0">
               <img
                 src={item.imageUrl}
                 alt={item.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <span className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md text-orange-400 font-extrabold text-[9px] px-3 py-1 rounded-full shadow-md border border-orange-500/20 uppercase tracking-widest">
+              <span className="absolute top-2 left-2 max-w-[calc(100%-1rem)] truncate bg-slate-950/80 backdrop-blur-md text-orange-400 font-extrabold text-[8px] px-2 py-1 rounded-full shadow-md border border-orange-500/20 uppercase tracking-widest">
                 {item.category === 'Desserts' ? 'Vegetarian' : 'Non-Vegetarian'}
               </span>
             </div>
 
-            <div className="p-4 space-y-4">
-              <h4 className="font-bold text-white text-sm tracking-wide line-clamp-1 group-hover:text-orange-400 transition-colors">
+            <div className="p-3 space-y-2.5 flex-1 flex flex-col justify-between">
+              <h4 className="font-bold text-white text-[11px] leading-snug min-h-8 line-clamp-2 group-hover:text-orange-400 transition-colors" title={item.name}>
                 {item.name}
               </h4>
 
-              <div className="flex items-center justify-between pt-1 border-t border-white/5">
-                <div>
+              <div className="space-y-2 pt-2.5 border-t border-white/5">
+                <div className="min-w-0">
                   <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Price</p>
-                  <p className="text-base font-extrabold text-white mt-0.5">RS {item.price.toFixed(2)}</p>
+                  <p className="text-sm font-extrabold text-white mt-0.5 truncate">RS {item.price.toFixed(2)}</p>
                 </div>
 
                 <button
                   onClick={() => onSelectItemToEdit(item)}
-                  className="bg-white hover:bg-slate-200 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-1.5 active:scale-95 glow-btn-orange border-none cursor-pointer"
+                  className="w-full bg-white hover:bg-slate-200 text-slate-950 font-bold text-[11px] px-3 py-2 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 active:scale-95 glow-btn-orange border-none cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[3]" /> Edit Item
                 </button>
@@ -204,9 +219,10 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onSelectItemToEdit }) =>
           </div>
         ))}
       </div>
+      )}
 
       {/* Pagination Bar */}
-      {totalPages > 1 && (
+      {!isLoading && !loadError && totalPages > 1 && (
         <div className="flex justify-between items-center glass-panel p-4 rounded-2xl shadow-xl">
           <span className="text-xs text-slate-400 font-medium">
             Showing <strong className="text-white">{startIndex + 1}</strong> to <strong className="text-white">{Math.min(startIndex + itemsPerPage, filteredItems.length)}</strong> of <strong className="text-white">{filteredItems.length}</strong> Items

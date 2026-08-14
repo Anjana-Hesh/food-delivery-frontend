@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Upload, RefreshCw, Save, Image as ImageIcon, Package, Layers, CheckCircle2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 import type { FoodItem } from '../types';
 import { fetchFoodItems, saveFoodItem, uploadFoodItemImage } from '../api';
 
@@ -7,37 +9,48 @@ interface ManageItemsProps {
   editingItem?: FoodItem | null;
 }
 
-const STATIC_FOOD_ITEMS: FoodItem[] = [
-  { id: '1', name: 'Pancake Stack with Berries', category: 'Desserts', price: 1490.00, stock: 12, imageUrl: 'https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=500&q=80' },
-  { id: '2', name: 'Classic Caesar Salad', category: 'Burgers', price: 1250.00, stock: 15, imageUrl: 'https://images.unsplash.com/photo-1546793665-c74683f339c1?auto=format&fit=crop&w=500&q=80' },
-  { id: '3', name: 'Margherita Pizza', category: 'Pizzas', price: 2850.00, stock: 8, imageUrl: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=500&q=80' },
-  { id: '4', name: 'Grilled Beef Steak', category: 'Burgers', price: 3450.00, stock: 0, imageUrl: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=500&q=80' },
-  { id: '5', name: 'Creamy Carbonara Pasta', category: 'Pizzas', price: 1850.00, stock: 10, imageUrl: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=500&q=80' },
-  { id: '6', name: 'Club Sandwich Deluxe', category: 'Burgers', price: 1650.00, stock: 20, imageUrl: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=500&q=80' },
-  { id: '7', name: 'Herb Grilled Chicken', category: 'Burgers', price: 2200.00, stock: 5, imageUrl: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=500&q=80' },
-  { id: '8', name: 'Mediterranean Quinoa Bowl', category: 'Drinks', price: 1350.00, stock: 14, imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=500&q=80' },
-  { id: '9', name: 'Chocolate Lava Cake', category: 'Desserts', price: 950.00, stock: 0, imageUrl: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=500&q=80' },
-  { id: '10', name: 'Iced Cappuccino', category: 'Drinks', price: 850.00, stock: 25, imageUrl: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=500&q=80' },
-];
-
 export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) => {
+  const [formItem, setFormItem] = useState<FoodItem | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [selectedImagePreview, setSelectedImagePreview] = useState('');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Burgers');
   const [price, setPrice] = useState('');
   const [stock, setStock] = useState('10');
+  const [imageUrl, setImageUrl] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 10;
 
-  const [items, setItems] = useState<FoodItem[]>(STATIC_FOOD_ITEMS);
+  const [items, setItems] = useState<FoodItem[]>([]);
+  const [loadError, setLoadError] = useState('');
+  const [stockDrafts, setStockDrafts] = useState<Record<string, number>>({});
+
+  const showApiAlert = (icon: 'success' | 'error', title: string, text: string) => {
+    Swal.fire({
+      icon,
+      title,
+      text,
+      background: '#0f172a',
+      color: '#f8fafc',
+      confirmButtonColor: icon === 'success' ? '#f97316' : '#e11d48',
+      customClass: {
+        popup: 'rounded-2xl border border-white/10',
+        confirmButton: 'rounded-xl',
+      },
+    });
+  };
 
   const loadData = () => {
     fetchFoodItems()
-      .then(data => setItems(data))
-      .catch(() => console.log("Using static data fallback for ManageItems Screen"));
+      .then(data => {
+        setItems(data);
+        setStockDrafts(Object.fromEntries(data.map(item => [item.id, item.stock])));
+        setLoadError('');
+      })
+      .catch(() => setLoadError('Inventory items could not be loaded from the database.'));
   };
 
   useEffect(() => {
@@ -46,22 +59,47 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
 
   useEffect(() => {
     if (editingItem) {
-      setTitle(editingItem.name);
-      setCategory(editingItem.category);
-      setPrice(editingItem.price.toString());
-      setStock(editingItem.stock.toString());
-      setSearchQuery(editingItem.name);
+      fillFormFromItem(editingItem);
     }
   }, [editingItem]);
+
+  const fillFormFromItem = (item: FoodItem) => {
+    setFormItem(item);
+    setTitle(item.name);
+    setCategory(item.category);
+    setPrice(item.price.toString());
+    setStock(item.stock.toString());
+    setImageUrl(item.imageUrl || '');
+    setSelectedImage(null);
+    setSelectedImagePreview('');
+  };
+
+  const handleImageSelect = (file: File | null) => {
+    setSelectedImage(file);
+    setSelectedImagePreview(file ? URL.createObjectURL(file) : '');
+  };
+
+  const clearForm = () => {
+    setTitle('');
+    setPrice('');
+    setStock('10');
+    setImageUrl('');
+    setFormItem(null);
+    handleImageSelect(null);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleSaveItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !price) return;
 
     try {
-      let imageUrl = editingItem ? editingItem.imageUrl : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80';
+      let finalImageUrl = imageUrl;
       if (selectedImage) {
-        imageUrl = await uploadFoodItemImage(selectedImage);
+        finalImageUrl = await uploadFoodItemImage(selectedImage);
       }
 
       const itemPayload: Partial<FoodItem> = {
@@ -69,45 +107,50 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
         category,
         price: parseFloat(price),
         stock: parseInt(stock) || 0,
-        imageUrl,
+        imageUrl: finalImageUrl,
       };
 
-      if (editingItem) {
-        itemPayload.id = editingItem.id;
+      if (formItem) {
+        itemPayload.id = formItem.id;
       }
 
       const saved = await saveFoodItem(itemPayload);
-      if (editingItem) {
-        setItems(items.map(i => i.id === editingItem.id ? saved : i));
+      if (formItem) {
+        setItems(items.map(i => i.id === formItem.id ? saved : i));
       } else {
         setItems([saved, ...items]);
       }
+      setStockDrafts(prev => ({ ...prev, [saved.id]: saved.stock }));
 
       setIsSuccess(true);
       setTimeout(() => setIsSuccess(false), 3000);
-      setTitle('');
-      setPrice('');
-      setStock('10');
-      setSelectedImage(null);
+      clearForm();
+      showApiAlert('success', 'Saved successfully', 'Item data was saved to the database.');
     } catch (err) {
       console.error("Error saving item", err);
+      showApiAlert('error', 'Save failed', 'Item data could not be saved. Please try again.');
     }
   };
 
-  const handleStockChange = async (id: string, newStock: number) => {
+  const handleStockDraftChange = (id: string, newStock: number) => {
+    setStockDrafts(prev => ({ ...prev, [id]: Math.max(0, newStock) }));
+  };
+
+  const handleStockSave = async (id: string) => {
     const targetItem = items.find(i => i.id === id);
     if (!targetItem) return;
 
     try {
-      const updatedItem = { ...targetItem, stock: Math.max(0, newStock) };
+      const updatedItem = { ...targetItem, stock: stockDrafts[id] ?? targetItem.stock };
       const saved = await saveFoodItem(updatedItem);
       setItems(items.map(i => i.id === id ? saved : i));
+      setStockDrafts(prev => ({ ...prev, [id]: saved.stock }));
+      fillFormFromItem(saved);
+      scrollToTop();
+      showApiAlert('success', 'Stock updated', `${saved.name} stock was saved successfully.`);
     } catch (err) {
       console.error("Error updating stock", err);
-      // fallback
-      setItems(prevItems => 
-        prevItems.map(item => item.id === id ? { ...item, stock: Math.max(0, newStock) } : item)
-      );
+      showApiAlert('error', 'Stock update failed', 'The stock change could not be saved to the database.');
     }
   };
 
@@ -130,7 +173,7 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
           </div>
           <div>
             <h2 className="text-lg font-extrabold text-white tracking-wide">
-              {editingItem ? `Editing Stock: ${editingItem.name}` : "Inventory & Stock Manager"}
+              {formItem ? `Editing Stock: ${formItem.name}` : "Inventory & Stock Manager"}
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">Control product stock, pricing, and details</p>
           </div>
@@ -146,7 +189,7 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
         {/* Left Form */}
         <div className="glass-panel rounded-2xl p-6 shadow-xl h-fit space-y-5">
           <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-            <Plus className="w-4 h-4 text-orange-400" /> {editingItem ? 'Update Stock Item' : 'Create New Dish'}
+            <Plus className="w-4 h-4 text-orange-400" /> {formItem ? 'Update Stock Item' : 'Create New Dish'}
           </h3>
 
           {isSuccess && (
@@ -183,6 +226,7 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
                   <option value="Pizzas">Pizzas</option>
                   <option value="Drinks">Drinks</option>
                   <option value="Desserts">Desserts</option>
+                  <option value="Desserts">Meals</option>
                 </select>
               </div>
 
@@ -213,17 +257,37 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Upload Photo (GCP Bucket)</label>
-              <label className="border-2 border-dashed border-white/5 hover:border-orange-500/40 rounded-xl p-3.5 text-center cursor-pointer bg-slate-950/20 hover:bg-slate-950/40 block transition-all duration-300">
-                <Upload className="w-5 h-5 text-orange-400 mx-auto mb-1.5" />
-                <span className="text-[10px] text-slate-400 font-bold">Choose File</span>
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => setSelectedImage(e.target.files?.[0] || null)} />
-                {selectedImage && <p className="text-[10px] text-orange-400 font-bold mt-1.5 truncate">{selectedImage.name}</p>}
-              </label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Item Photo</label>
+              <div className="grid grid-cols-[88px_1fr] gap-3 rounded-xl border border-white/5 bg-slate-950/30 p-2.5">
+                <div className="h-20 w-20 overflow-hidden rounded-xl border border-white/10 bg-slate-950">
+                  {(selectedImagePreview || imageUrl) ? (
+                    <img src={selectedImagePreview || imageUrl} alt="Item preview" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-slate-600">
+                      <ImageIcon className="h-5 w-5" />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 space-y-2">
+                  <input
+                    type="text"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="Image URL from database"
+                    className="w-full bg-slate-950/60 border border-white/5 rounded-xl px-3 py-2 text-[10px] text-slate-300 focus:outline-none focus:border-orange-500 focus:bg-slate-950 transition-all duration-300"
+                  />
+                  <label className="flex items-center justify-center gap-1.5 rounded-xl bg-slate-900/80 px-3 py-2 text-[10px] font-bold text-orange-400 hover:bg-slate-800 cursor-pointer transition-all duration-300">
+                    <Upload className="w-3.5 h-3.5" />
+                    Choose File
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageSelect(e.target.files?.[0] || null)} />
+                  </label>
+                  {selectedImage && <p className="text-[10px] text-orange-400 font-bold truncate">{selectedImage.name}</p>}
+                </div>
+              </div>
             </div>
 
             <button type="submit" className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 font-bold text-xs text-white shadow-lg shadow-orange-500/10 transition-all duration-300 flex items-center justify-center gap-2 border-none cursor-pointer glow-btn-orange">
-              <ImageIcon className="w-4 h-4" /> {editingItem ? 'Save Stock Changes' : 'Create Item'}
+              <ImageIcon className="w-4 h-4" /> {formItem ? 'Save Stock Changes' : 'Create Item'}
             </button>
           </form>
         </div>
@@ -252,22 +316,44 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
           </div>
 
           {/* Cards Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
+          {loadError && (
+            <div className="glass-panel rounded-2xl p-6 text-center shadow-xl border-rose-500/20">
+              <p className="text-sm font-extrabold text-rose-300">{loadError}</p>
+              <p className="text-xs text-slate-400 mt-2">Please check the backend connection and try again.</p>
+            </div>
+          )}
+
+          {!loadError && currentItems.length === 0 && (
+            <div className="glass-panel rounded-2xl p-6 text-center text-sm font-bold text-slate-300 shadow-xl">
+              No inventory items found.
+            </div>
+          )}
+
+          {!loadError && currentItems.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-3.5">
             {currentItems.map((item) => (
-              <div 
+              <div
+                role="button"
+                tabIndex={0}
                 key={item.id} 
-                className="glass-panel rounded-2xl p-3.5 flex flex-col justify-between shadow-lg hover:border-orange-500/20 hover:shadow-[0_8px_25px_rgba(249,115,22,0.1)] transition-all duration-300 group"
+                onClick={() => fillFormFromItem(item)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') fillFormFromItem(item);
+                }}
+                className={`glass-panel w-[156px] h-[258px] rounded-2xl p-3 flex flex-col justify-between text-left shadow-lg hover:border-orange-500/25 hover:shadow-[0_8px_25px_rgba(249,115,22,0.1)] transition-all duration-300 group border cursor-pointer ${
+                  formItem?.id === item.id ? 'border-orange-500/50 bg-orange-500/5' : 'border-white/5'
+                }`}
               >
                 <div className="space-y-2">
-                  <div className="relative w-full h-32 rounded-xl overflow-hidden bg-slate-950">
+                  <div className="relative w-full h-[90px] rounded-xl overflow-hidden bg-slate-950">
                     <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <span className="absolute top-2 left-2 bg-slate-950/80 backdrop-blur-md text-orange-400 font-extrabold text-[8px] px-2 py-0.5 rounded border border-orange-500/20 uppercase tracking-widest">
+                    <span className="absolute top-2 left-2 max-w-[calc(100%-1rem)] truncate bg-slate-950/80 backdrop-blur-md text-orange-400 font-extrabold text-[8px] px-2 py-0.5 rounded border border-orange-500/20 uppercase tracking-widest">
                       {item.category}
                     </span>
                   </div>
 
                   <div>
-                    <h4 className="font-bold text-white text-xs line-clamp-1 group-hover:text-orange-400 transition-colors" title={item.name}>{item.name}</h4>
+                    <h4 className="font-bold text-white text-[11px] min-h-7 leading-snug line-clamp-2 group-hover:text-orange-400 transition-colors" title={item.name}>{item.name}</h4>
                     <p className="text-[10px] font-black text-slate-300 mt-0.5">RS {item.price.toFixed(2)}</p>
                   </div>
                 </div>
@@ -279,28 +365,38 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
                         ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' 
                         : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                     }`}>
-                      {item.stock === 0 ? 'Out of Stock' : `${item.stock} Available`}
+                      {(stockDrafts[item.id] ?? item.stock) === 0 ? 'Out of Stock' : `${stockDrafts[item.id] ?? item.stock} Available`}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between gap-1 bg-slate-950/80 p-1 rounded-xl border border-white/5">
                     <button 
                       type="button"
-                      onClick={() => handleStockChange(item.id, item.stock - 1)} 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStockDraftChange(item.id, (stockDrafts[item.id] ?? item.stock) - 1);
+                      }} 
                       className="px-2 py-1 bg-slate-900/60 hover:bg-slate-800 text-white rounded-lg text-xs font-black cursor-pointer border-none"
                     >
                       -
                     </button>
-                    <span className="text-xs font-extrabold text-white px-1.5">{item.stock}</span>
+                    <span className="text-xs font-extrabold text-white px-1.5">{stockDrafts[item.id] ?? item.stock}</span>
                     <button 
                       type="button"
-                      onClick={() => handleStockChange(item.id, item.stock + 1)} 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStockDraftChange(item.id, (stockDrafts[item.id] ?? item.stock) + 1);
+                      }} 
                       className="px-2 py-1 bg-slate-900/60 hover:bg-slate-800 text-white rounded-lg text-xs font-black cursor-pointer border-none"
                     >
                       +
                     </button>
                     <button 
                       type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStockSave(item.id);
+                      }}
                       className="p-1 bg-slate-900 hover:bg-orange-600 hover:text-white text-orange-400 rounded-lg transition-colors border-none cursor-pointer"
                       title="Sync with MongoDB"
                     >
@@ -311,9 +407,10 @@ export const ManageItemsScreen: React.FC<ManageItemsProps> = ({ editingItem }) =
               </div>
             ))}
           </div>
+          )}
 
           {/* Pagination Controls */}
-          {totalPages > 1 && (
+          {!loadError && totalPages > 1 && (
             <div className="flex justify-between items-center glass-panel p-4 rounded-2xl shadow-xl">
               <span className="text-xs text-slate-400 font-medium">
                 Showing <strong className="text-white">{startIndex + 1}</strong> to <strong className="text-white">{Math.min(startIndex + itemsPerPage, filteredItems.length)}</strong> of <strong className="text-white">{filteredItems.length}</strong> Managed Items
