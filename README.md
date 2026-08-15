@@ -4,7 +4,7 @@
 * **Student Name:** U. Anjana Heshan
 * **Student ID:** [Your IJSE Student ID Here]
 * **Module:** ITS 2130 - Enterprise Cloud Architecture (ECA)
-* **GCP Project ID:** [Your GCP Project ID Here]
+* **GCP Project ID:** intense-slice-505613-d3
 
 ## Project Description
 This is the Frontend Admin Dashboard and Orchestration Panel for the ByteBites Enterprise Food Delivery Application. It provides an intuitive interface for real-time inventory management, order dispatch, fleet tracking, and billing API monitoring.
