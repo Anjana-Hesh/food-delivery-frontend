@@ -106,3 +106,14 @@ export async function fetchPaymentLogs(): Promise<any[]> {
   if (!res.ok) throw new Error("Failed to fetch billing logs");
   return await res.json();
 }
+
+export async function createOrder(customerName: string, items: string, totalAmount: number): Promise<any> {
+  const res = await fetch(`${API_BASE_URL}/api/orders`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ customerName, items, totalAmount }),
+  });
+  if (!res.ok) throw new Error("Failed to create order");
+  return await res.json();
+}
+
